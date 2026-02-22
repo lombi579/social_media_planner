@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planner Board</title>
+    <link rel="stylesheet" href="/static/board.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Social Media Planner — Board</h1>
+    </header>
+
+    <section class="composer">
+      <h2>Создать публикацию</h2>
+      <form method="post" action="/items">
+        <select name="platform" required>
+          <option value="youtube">YouTube</option>
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+        <input name="account" placeholder="Аккаунт" required />
+        <input name="publish_at" placeholder="YYYY-MM-DD HH:MM" required />
+        <input name="description" placeholder="Описание" required />
+        <input name="hashtags" placeholder="#tag1 #tag2" />
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <main class="board">
+      {% set columns = {"planned": "Planned", "published": "Published", "failed": "Failed"} %}
+      {% for key, title in columns.items() %}
+      <section class="column">
+        <h3>{{ title }}</h3>
+        {% for item in items if item.status == key %}
+        <article class="card">
+          <div class="meta">#{{ item.id }} • {{ item.platform }} • {{ item.account }}</div>
+          <div><strong>{{ item.publish_at }}</strong></div>
+          <p>{{ item.description }}</p>
+          <small>{{ item.hashtags }}</small>
+          <div class="actions">
+            <form method="post" action="/items/{{ item.id }}/status">
+              <select name="status">
+                <option value="planned" {% if item.status == 'planned' %}selected{% endif %}>planned</option>
+                <option value="published" {% if item.status == 'published' %}selected{% endif %}>published</option>
+                <option value="failed" {% if item.status == 'failed' %}selected{% endif %}>failed</option>
+              </select>
+              <button type="submit">Обновить</button>
+            </form>
+            <form method="post" action="/items/{{ item.id }}/delete">
+              <button type="submit" class="danger">Удалить</button>
+            </form>
+          </div>
+        </article>
+        {% endfor %}
+      </section>
+      {% endfor %}
+    </main>
+  </body>
+</html>
