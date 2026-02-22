@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from web.repository import Repository, VALID_PLATFORMS, VALID_STATUSES
+from web.repository import Repository, STATUS_COLUMNS, VALID_PLATFORMS
 
 app = FastAPI(title="Buffer-style Social Planner")
 repo = Repository(os.getenv("DATABASE_FILE", "data/app.db"))
@@ -23,12 +23,12 @@ def health() -> dict:
 @app.get("/", response_class=HTMLResponse)
 def board(request: Request) -> HTMLResponse:
     posts = repo.list_posts()
-    by_status = {status: [p for p in posts if p.status == status] for status in VALID_STATUSES}
+    by_status = {status: [p for p in posts if p.status == status] for status in STATUS_COLUMNS}
     return templates.TemplateResponse(
         "board.html",
         {
             "request": request,
-            "columns": ["draft", "planned", "published", "failed"],
+            "columns": list(STATUS_COLUMNS),
             "by_status": by_status,
         },
     )

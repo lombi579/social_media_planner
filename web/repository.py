@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-VALID_STATUSES = {"draft", "planned", "published", "failed"}
+STATUS_COLUMNS = ("draft", "planned", "published", "failed")
+VALID_STATUSES = set(STATUS_COLUMNS)
 VALID_PLATFORMS = {"youtube", "instagram", "tiktok", "telegram"}
 
 
