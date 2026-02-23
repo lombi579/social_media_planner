@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register - Social Planner</title>
+    <link rel="stylesheet" href="/static/board.css" />
+  </head>
+  <body>
+    <div class="login-wrap">
+      <form class="login-card" method="post" action="/register">
+        <h1>Create account</h1>
+        <input name="username" placeholder="Username (min 3)" required />
+        <input name="password" placeholder="Password (min 6)" type="password" required />
+        {% if error %}<p class="error-text">{{ error }}</p>{% endif %}
+        <button type="submit">Создать аккаунт</button>
+        <p class="helper-text">Уже есть аккаунт? <a href="/login">Войти</a></p>
+      </form>
+    </div>
+  </body>
+</html>
