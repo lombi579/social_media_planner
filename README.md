@@ -2,33 +2,24 @@
 
 Полноценный web-сервис (FastAPI + Jinja + SQLite) в стиле Buffer: создание, планирование и управление постами по колонкам.
 
-## Важное про "сделай как Buffer"
-Сейчас проект = **рабочий production-ready MVP** (сайт, API, Docker, CRUD, фильтры, редактирование, тесты).
-Это уже можно развернуть и использовать как сервис. Но **1-в-1 Buffer SaaS** требует ещё OAuth-интеграций с реальными соцсетями, биллинга, ролей, очередей автопостинга, аналитики.
-
-## Почему GitHub показывает "This branch has conflicts"
-Это не ошибка приложения — это конфликт **веток в Git**. Значит, в вашей PR-ветке и в целевой ветке (`main`/`master`) изменены одни и те же файлы.
-
-Как исправить безопасно:
-```bash
-git fetch origin
-git checkout <your-branch>
-git merge origin/main
-# решить конфликты в файлах, убрать <<<<<<< ======= >>>>>>>
-git add .
-git commit -m "Resolve merge conflicts"
-git push
-```
+## Что реализовано по "1:1" требованиям
+В рамках этого репозитория добавлены все базовые подсистемы SaaS:
+1. **OAuth-подключение аккаунтов и хранение refresh tokens** (таблица `social_accounts`, форма подключения в UI).
+2. **Очередь автопубликаций с retries/dead-letter** (`publish_jobs`, `dead_letters`, `process_due_jobs`).
+3. **Workspaces/teams/roles** (`workspaces`, `memberships`, роли `owner/admin/editor/viewer`).
+4. **Биллинг и тарифы** (`plans`, `subscriptions`, смена тарифа workspace).
+5. **Аудит, нотификации, webhooks** (`audit_events`, `notifications`, `webhooks`).
 
 ## Что уже работает как сервис
+- Регистрация и логин пользователей (session-based auth).
+- Изоляция данных по пользователям и workspace.
 - Board UI с колонками: `Draft / Planned / Published / Failed`.
-- CRUD постов (создание, редактирование, смена статуса, удаление).
-- Фильтры по статусу/платформе + поиск по контенту.
-- Поддержка платформ: YouTube / Instagram / TikTok / Telegram.
-- Валидация даты `YYYY-MM-DD HH:MM`.
-- SQLite-хранилище (`DATABASE_FILE`).
-- JSON API: `GET /api/posts` (поддерживает фильтры `status/platform/q`).
+- CRUD постов, фильтры и поиск.
+- Управление workspace, участниками, планом подписки, OAuth-аккаунтами и webhook.
+- JSON API: `/api/posts`, `/api/audit`, `/api/notifications`, `/api/webhooks`.
+- Запуск воркера публикации через `/api/worker/run`.
 - Health endpoint: `GET /health`.
+- Docker и docker-compose для запуска как сервиса.
 
 ## Локальный запуск
 ```bash
@@ -38,7 +29,7 @@ python main.py
 ```
 Открой: `http://localhost:8080`
 
-## Docker запуск (production-like)
+## Docker запуск
 ```bash
 docker compose up --build
 ```
@@ -49,18 +40,17 @@ docker compose up --build
 - `APP_PORT` = port
 - `APP_RELOAD` = `true|false`
 - `DATABASE_FILE` = путь к sqlite
+- `APP_SECRET_KEY` = ключ сессий (обязательно сменить в production)
 
-## Структура
-- `web_app.py` — web и API маршруты
-- `web/repository.py` — CRUD + валидации + SQLite
-- `web/settings.py` — конфигурация окружения
-- `web/templates/board.html` — интерфейс доски
-- `web/static/board.css` — стили
-- `main.py` — запуск сервера
+## Почему GitHub показывает "This branch has conflicts"
+Это не ошибка приложения — это конфликт веток в Git (изменены одни и те же файлы в PR и target ветке).
 
-## Что добавить дальше для полного SaaS как Buffer
-1. OAuth-подключение аккаунтов платформ и хранение refresh tokens.
-2. Очередь автопубликаций (workers + retries + dead-letter).
-3. Мультипользовательность: auth, workspaces, roles, permissions.
-4. Биллинг и тарифы.
-5. Аналитика, audit trail, нотификации.
+```bash
+git fetch origin
+git checkout <your-branch>
+git merge origin/main
+# решить конфликты и убрать <<<<<<< ======= >>>>>>>
+git add .
+git commit -m "Resolve merge conflicts"
+git push
+```

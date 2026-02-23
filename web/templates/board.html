@@ -8,9 +8,31 @@
   </head>
   <body>
     <header class="topbar">
-      <h1>Social Planner</h1>
-      <p>Buffer-style board: YouTube / Instagram / TikTok / Telegram Channels</p>
+      <div>
+        <h1>Social Planner</h1>
+        <p>Buffer-style board: YouTube / Instagram / TikTok / Telegram Channels</p>
+      </div>
+      <form method="post" action="/logout" class="logout-form">
+        <span class="user-label">{{ current_user }}</span>
+        <button type="submit">Logout</button>
+      </form>
     </header>
+
+    <section class="composer">
+      <h2>Workspace</h2>
+      <form method="post" action="/workspace/select" class="filter-form">
+        <select name="workspace_id">
+          {% for ws in workspaces %}
+          <option value="{{ ws.id }}" {% if ws.id == workspace_id %}selected{% endif %}>{{ ws.name }} ({{ ws.role }})</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Switch</button>
+      </form>
+      <form method="post" action="/workspace/create" class="filter-form">
+        <input name="name" placeholder="New workspace name" required />
+        <button type="submit">Create workspace</button>
+      </form>
+    </section>
 
     <section class="stats">
       {% for column in columns %}
@@ -22,37 +44,90 @@
     </section>
 
     <section class="filters composer">
-      <h2>Фильтры</h2>
+      <h2>Filters</h2>
       <form method="get" action="/" class="filter-form">
         <select name="status">
-          <option value="">Все статусы</option>
+          <option value="">All statuses</option>
           {% for status_name in columns %}
           <option value="{{ status_name }}" {% if filters.status == status_name %}selected{% endif %}>{{ status_name }}</option>
           {% endfor %}
         </select>
         <select name="platform">
-          <option value="">Все платформы</option>
+          <option value="">All platforms</option>
           {% for platform_name in platforms %}
           <option value="{{ platform_name }}" {% if filters.platform == platform_name %}selected{% endif %}>{{ platform_name }}</option>
           {% endfor %}
         </select>
-        <input name="q" value="{{ filters.q }}" placeholder="Поиск по title/description/channel" />
-        <button type="submit">Применить</button>
-        <a href="/" class="clear-btn">Сброс</a>
+        <input name="q" value="{{ filters.q }}" placeholder="Search title/description/channel" />
+        <button type="submit">Apply</button>
+        <a href="/" class="clear-btn">Reset</a>
       </form>
     </section>
 
     <section class="composer">
-      <h2>Новая публикация</h2>
+      <h2>OAuth Accounts</h2>
+      <form method="post" action="/workspace/accounts" class="grid-form">
+        <select name="platform" required>
+          <option value="youtube">YouTube</option>
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="telegram">Telegram</option>
+        </select>
+        <input name="account_label" placeholder="Account label" required />
+        <input name="access_token" placeholder="Access token" required />
+        <input name="refresh_token" placeholder="Refresh token" required />
+        <input name="expires_at" placeholder="YYYY-MM-DD HH:MM" required />
+        <button type="submit">Connect account</button>
+      </form>
+      <ul>
+        {% for acc in social_accounts %}
+        <li>{{ acc.platform }} — {{ acc.account_label }} (expires {{ acc.expires_at }})</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="composer">
+      <h2>Team / Billing / Webhooks</h2>
+      <form method="post" action="/workspace/members" class="filter-form">
+        <input name="username" placeholder="Username" required />
+        <select name="role">
+          <option value="viewer">viewer</option>
+          <option value="editor">editor</option>
+          <option value="admin">admin</option>
+        </select>
+        <button type="submit">Add member</button>
+      </form>
+      <form method="post" action="/workspace/plan" class="filter-form">
+        <select name="plan_code">
+          <option value="starter">starter</option>
+          <option value="pro">pro</option>
+          <option value="business">business</option>
+        </select>
+        <button type="submit">Change plan</button>
+      </form>
+      <form method="post" action="/workspace/webhooks" class="filter-form">
+        <input name="event_type" placeholder="event e.g. post.published" required />
+        <input name="target_url" placeholder="https://example.com/webhook" required />
+        <input name="secret" placeholder="secret" required />
+        <button type="submit">Add webhook</button>
+      </form>
+      <form method="post" action="/api/worker/run" class="filter-form">
+        <input name="limit" value="20" required />
+        <button type="submit">Run publish worker</button>
+      </form>
+    </section>
+
+    <section class="composer">
+      <h2>New post</h2>
       <form method="post" action="/posts" class="grid-form">
-        <input name="title" placeholder="Заголовок поста" required />
+        <input name="title" placeholder="Title" required />
         <select name="platform" required>
           <option value="youtube">YouTube</option>
           <option value="instagram">Instagram</option>
           <option value="tiktok">TikTok</option>
           <option value="telegram">Telegram Channel</option>
         </select>
-        <input name="channel_name" placeholder="Канал / аккаунт" required />
+        <input name="channel_name" placeholder="Channel/account" required />
         <input name="publish_at" placeholder="YYYY-MM-DD HH:MM" required />
         <select name="status">
           <option value="draft">draft</option>
@@ -60,10 +135,10 @@
           <option value="published">published</option>
           <option value="failed">failed</option>
         </select>
-        <input name="media_url" placeholder="Ссылка на медиа (опционально)" />
+        <input name="media_url" placeholder="Media URL" />
         <input name="hashtags" placeholder="#hash1 #hash2" />
-        <textarea name="description" placeholder="Описание" required></textarea>
-        <button type="submit">Сохранить публикацию</button>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <button type="submit">Save post</button>
       </form>
     </section>
 

@@ -11,6 +11,7 @@ class Settings:
     port: int
     reload: bool
     database_file: str
+    secret_key: str
 
 
 def _to_bool(value: str | None, default: bool) -> bool:
@@ -28,4 +29,5 @@ def load_settings() -> Settings:
         port=int(os.getenv("APP_PORT", "8080")),
         reload=_to_bool(os.getenv("APP_RELOAD"), default_reload),
         database_file=os.getenv("DATABASE_FILE", "data/app.db"),
+        secret_key=os.getenv("APP_SECRET_KEY", "change-me-in-production"),
     )
