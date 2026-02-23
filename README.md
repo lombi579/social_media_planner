@@ -1,38 +1,58 @@
 # Social Planner (Web-only)
 
-Полностью убран Telegram-бот. Репозиторий теперь — цельное web-приложение в стиле Buffer.
+Полноценный web-сервис (FastAPI + Jinja + SQLite) в стиле Buffer: создание, планирование и управление постами по колонкам.
 
-## Что готово сейчас
-- Чистый web-сервис на FastAPI + Jinja.
-- Buffer-style board с колонками: `Draft / Planned / Published / Failed`.
-- Создание публикации через форму.
-- Поддержка платформ: **YouTube, Instagram, TikTok, Telegram Channels**.
-- Обновление статуса карточки на доске.
-- Удаление карточки.
-- Постоянное хранение в SQLite (`data/app.db`).
+## Почему GitHub показывает "This branch has conflicts"
+Это не ошибка приложения — это конфликт **веток в Git**. Значит, в вашей PR-ветке и в целевой ветке (`main`/`master`) изменены одни и те же файлы.
 
-## Быстрый запуск
+Как исправить безопасно:
+```bash
+git fetch origin
+git checkout <your-branch>
+git merge origin/main
+# решить конфликты в файлах, убрать <<<<<<< ======= >>>>>>>
+git add .
+git commit -m "Resolve merge conflicts"
+git push
+```
+После этого PR станет mergeable, и сайт останется целым.
+
+## Что уже работает как сервис
+- Board UI с колонками: `Draft / Planned / Published / Failed`.
+- CRUD постов (создание, смена статуса, удаление).
+- Поддержка платформ: YouTube / Instagram / TikTok / Telegram.
+- Валидация даты `YYYY-MM-DD HH:MM`.
+- SQLite-хранилище (`DATABASE_FILE`).
+- JSON API: `GET /api/posts`.
+- Health endpoint: `GET /health`.
+
+## Локальный запуск
 ```bash
 pip install -r requirements.txt
+cp .env.example .env
 python main.py
 ```
-
 Открой: `http://localhost:8080`
 
+## Docker запуск (production-like)
+```bash
+docker compose up --build
+```
+
+## ENV
+- `APP_ENV` = `development|production`
+- `APP_HOST` = host bind
+- `APP_PORT` = port
+- `APP_RELOAD` = `true|false`
+- `DATABASE_FILE` = путь к sqlite
+
 ## Структура
-- `web_app.py` — маршруты и web-слой.
-- `web/repository.py` — SQLite-репозиторий.
-- `web/templates/board.html` — UI.
-- `web/static/board.css` — стили.
-- `main.py` — запуск uvicorn.
+- `web_app.py` — web и API маршруты
+- `web/repository.py` — CRUD + валидации + SQLite
+- `web/settings.py` — конфигурация окружения
+- `web/templates/board.html` — интерфейс доски
+- `web/static/board.css` — стили
+- `main.py` — запуск сервера
 
-## Что нужно для «продавать как Buffer 1:1»
-Сейчас это сильный MVP UI/CRUD. Для полноценно продаваемого SaaS уровня Buffer ещё нужны:
-1. Авторизация, workspace/team, роли и permissions.
-2. OAuth-подключение реальных аккаунтов и каналов по каждой платформе.
-3. Фоновая очередь публикаций + retries + webhooks статусов.
-4. Загрузка и хранение медиа (S3-compatible), обработка видео, thumbnails.
-5. Аналитика, биллинг, аудит-логи, уведомления.
-6. Drag&drop, календарный view, bulk actions, templates.
-
-Если хотите, следующим шагом могу добавить именно **SaaS-ядро**: auth + tenants + account connections + publish workers.
+## Чтобы было "как полноценный продаваемый SaaS"
+Дальше нужны: auth/users/workspaces, OAuth-подключение реальных соц. аккаунтов, background workers для автопубликаций, billing, аналитика, аудит, медиа-хранилище.

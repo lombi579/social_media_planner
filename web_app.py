@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+from dataclasses import asdict
 
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -8,16 +8,23 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from web.repository import Repository, STATUS_COLUMNS, VALID_PLATFORMS
+from web.settings import load_settings
 
+settings = load_settings()
 app = FastAPI(title="Buffer-style Social Planner")
-repo = Repository(os.getenv("DATABASE_FILE", "data/app.db"))
+repo = Repository(settings.database_file)
 templates = Jinja2Templates(directory="web/templates")
 app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True}
+    return {"ok": True, "env": settings.app_env}
+
+
+@app.get("/api/posts")
+def api_posts() -> list[dict]:
+    return [asdict(post) for post in repo.list_posts()]
 
 
 @app.get("/", response_class=HTMLResponse)
