@@ -1,58 +1,42 @@
-# Social Planner (Web-only)
+# social_media_planner
 
-Полноценный web-сервис (FastAPI + Jinja + SQLite) в стиле Buffer: создание, планирование и управление постами по колонкам.
+Теперь в репозитории есть **2 интерфейса**:
+- Telegram-бот для быстрого планирования.
+- Web Board (в стиле Buffer) для визуального управления публикациями.
 
-## Почему GitHub показывает "This branch has conflicts"
-Это не ошибка приложения — это конфликт **веток в Git**. Значит, в вашей PR-ветке и в целевой ветке (`main`/`master`) изменены одни и те же файлы.
+## Что сделано «как там» (Buffer-style MVP)
+- Канбан-доска с колонками: `Planned / Published / Failed`.
+- Создание карточки публикации через форму.
+- Изменение статуса карточки прямо на доске.
+- Удаление карточек.
+- Постоянное хранение карточек в SQLite (`data/board.db`).
 
-Как исправить безопасно:
-```bash
-git fetch origin
-git checkout <your-branch>
-git merge origin/main
-# решить конфликты в файлах, убрать <<<<<<< ======= >>>>>>>
-git add .
-git commit -m "Resolve merge conflicts"
-git push
-```
-После этого PR станет mergeable, и сайт останется целым.
-
-## Что уже работает как сервис
-- Board UI с колонками: `Draft / Planned / Published / Failed`.
-- CRUD постов (создание, смена статуса, удаление).
-- Поддержка платформ: YouTube / Instagram / TikTok / Telegram.
-- Валидация даты `YYYY-MM-DD HH:MM`.
-- SQLite-хранилище (`DATABASE_FILE`).
-- JSON API: `GET /api/posts`.
-- Health endpoint: `GET /health`.
-
-## Локальный запуск
+## Запуск
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
+```
+
+### Telegram-бот
+```bash
 python main.py
+```
+
+### Web Board
+```bash
+uvicorn web_app:app --reload --port 8080
 ```
 Открой: `http://localhost:8080`
 
-## Docker запуск (production-like)
-```bash
-docker compose up --build
-```
+## Команды бота
+- `/start` — создать новую публикацию.
+- `/accounts` — список аккаунтов.
+- `/my_schedules` — ваши сохраненные публикации.
+- `/buffer_like` — что нужно для full Buffer-уровня.
 
-## ENV
-- `APP_ENV` = `development|production`
-- `APP_HOST` = host bind
-- `APP_PORT` = port
-- `APP_RELOAD` = `true|false`
-- `DATABASE_FILE` = путь к sqlite
-
-## Структура
-- `web_app.py` — web и API маршруты
-- `web/repository.py` — CRUD + валидации + SQLite
-- `web/settings.py` — конфигурация окружения
-- `web/templates/board.html` — интерфейс доски
-- `web/static/board.css` — стили
-- `main.py` — запуск сервера
-
-## Чтобы было "как полноценный продаваемый SaaS"
-Дальше нужны: auth/users/workspaces, OAuth-подключение реальных соц. аккаунтов, background workers для автопубликаций, billing, аналитика, аудит, медиа-хранилище.
+## Что дальше для полного уровня Buffer
+- OAuth-подключение реальных каналов (YouTube/Instagram/TikTok).
+- Фоновая очередь автопубликаций и retry-политики.
+- Медиа-хранилище и обработка видео.
+- Аналитика, роли команды, approvals, аудит.
+- Drag&drop между колонками и календарный view.
