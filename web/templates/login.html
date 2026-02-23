@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Social Planner</title>
+    <link rel="stylesheet" href="/static/board.css" />
+  </head>
+  <body>
+    <div class="login-wrap">
+      <form class="login-card" method="post" action="/login">
+        <h1>Social Planner Login</h1>
+        <input name="username" placeholder="Username" required />
+        <input name="password" placeholder="Password" type="password" required />
+        {% if error %}<p class="error-text">{{ error }}</p>{% endif %}
+        <button type="submit">Войти</button>
+        <p class="helper-text">Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+      </form>
+    </div>
+  </body>
+</html>
