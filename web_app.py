@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from urllib.parse import urlencode
+from urllib.request import Request as UrlRequest, urlopen
+import json
+import secrets
+from datetime import datetime
 
 from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -46,6 +51,10 @@ def _active_workspace_id(request: Request, user_id: int) -> int:
     first_id = int(workspaces[0]["id"])
     request.session["workspace_id"] = first_id
     return first_id
+
+
+def _youtube_oauth_ready() -> bool:
+    return bool(settings.youtube_client_id and settings.youtube_client_secret and settings.youtube_redirect_uri)
 
 
 @app.get("/health")
@@ -161,6 +170,78 @@ def add_social_account(
     return RedirectResponse(url="/", status_code=303)
 
 
+@app.get("/oauth/youtube/start")
+def oauth_youtube_start(request: Request) -> RedirectResponse:
+    user_id, _ = _require_user(request)
+    workspace_id = _active_workspace_id(request, user_id)
+    if not _youtube_oauth_ready():
+        raise HTTPException(status_code=500, detail="YouTube OAuth env is not configured")
+
+    state = secrets.token_urlsafe(24)
+    repo.create_oauth_state(user_id, workspace_id, "youtube", state)
+    params = {
+        "client_id": settings.youtube_client_id,
+        "redirect_uri": settings.youtube_redirect_uri,
+        "response_type": "code",
+        "scope": "https://www.googleapis.com/auth/youtube.upload",
+        "access_type": "offline",
+        "prompt": "consent",
+        "state": state,
+    }
+    auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
+    return RedirectResponse(url=auth_url, status_code=303)
+
+
+@app.get("/oauth/youtube/callback")
+def oauth_youtube_callback(request: Request, code: str | None = Query(default=None), state: str | None = Query(default=None)) -> RedirectResponse:
+    user_id, _ = _require_user(request)
+    workspace_id = _active_workspace_id(request, user_id)
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="missing oauth code/state")
+    if not repo.consume_oauth_state(user_id, workspace_id, "youtube", state):
+        raise HTTPException(status_code=400, detail="invalid oauth state")
+    if not _youtube_oauth_ready():
+        raise HTTPException(status_code=500, detail="YouTube OAuth env is not configured")
+
+    token_req = UrlRequest(
+        "https://oauth2.googleapis.com/token",
+        data=urlencode(
+            {
+                "code": code,
+                "client_id": settings.youtube_client_id,
+                "client_secret": settings.youtube_client_secret,
+                "redirect_uri": settings.youtube_redirect_uri,
+                "grant_type": "authorization_code",
+            }
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    try:
+        with urlopen(token_req, timeout=20) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"oauth token exchange failed: {exc}")
+
+    access_token = payload.get("access_token")
+    refresh_token = payload.get("refresh_token")
+    expires_in = int(payload.get("expires_in", 3600))
+    if not access_token:
+        raise HTTPException(status_code=502, detail="oauth token exchange returned empty access_token")
+
+    expires_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    repo.add_social_account(
+        user_id,
+        workspace_id,
+        platform="youtube",
+        account_label="YouTube OAuth",
+        access_token=access_token,
+        refresh_token=refresh_token or "",
+        expires_at=expires_at,
+    )
+    return RedirectResponse(url="/", status_code=303)
+
+
 @app.get("/api/posts")
 def api_posts(
     request: Request,
@@ -244,6 +325,7 @@ def board(
             "workspace_id": workspace_id,
             "workspaces": workspaces,
             "social_accounts": accounts,
+            "youtube_oauth_ready": _youtube_oauth_ready(),
         },
     )
 

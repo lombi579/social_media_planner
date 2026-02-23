@@ -66,6 +66,13 @@
 
     <section class="composer">
       <h2>OAuth Accounts</h2>
+      <div class="oauth-row">
+        {% if youtube_oauth_ready %}
+        <a class="oauth-btn" href="/oauth/youtube/start">Connect YouTube via Google OAuth</a>
+        {% else %}
+        <span class="oauth-note">Set YOUTUBE_CLIENT_ID/YOUTUBE_CLIENT_SECRET/YOUTUBE_REDIRECT_URI in .env</span>
+        {% endif %}
+      </div>
       <form method="post" action="/workspace/accounts" class="grid-form">
         <select name="platform" required>
           <option value="youtube">YouTube</option>
@@ -73,11 +80,11 @@
           <option value="tiktok">TikTok</option>
           <option value="telegram">Telegram</option>
         </select>
-        <input name="account_label" placeholder="Account label" required />
-        <input name="access_token" placeholder="Access token" required />
-        <input name="refresh_token" placeholder="Refresh token" required />
+        <input name="account_label" placeholder="Manual account label" required />
+        <input name="access_token" placeholder="Manual access token" required />
+        <input name="refresh_token" placeholder="Manual refresh token" required />
         <input name="expires_at" placeholder="YYYY-MM-DD HH:MM" required />
-        <button type="submit">Connect account</button>
+        <button type="submit">Save manual tokens</button>
       </form>
       <ul>
         {% for acc in social_accounts %}

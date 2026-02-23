@@ -123,6 +123,10 @@ class RepositoryTests(unittest.TestCase):
         # bob should have workspace access now
         self.assertTrue(any(int(w["id"]) == int(self.ws) for w in self.repo.list_workspaces(bob.id)))
 
+    def test_oauth_state_roundtrip(self) -> None:
+        self.repo.create_oauth_state(self.user.id, self.ws, "youtube", "abc123")
+        self.assertTrue(self.repo.consume_oauth_state(self.user.id, self.ws, "youtube", "abc123"))
+        self.assertFalse(self.repo.consume_oauth_state(self.user.id, self.ws, "youtube", "abc123"))
 
 if __name__ == "__main__":
     unittest.main()

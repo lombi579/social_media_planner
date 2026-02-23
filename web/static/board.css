@@ -50,3 +50,7 @@ body { margin: 0; font-family: Inter, Arial, sans-serif; background: var(--bg); 
 
 .helper-text { margin: 0; color: #475467; font-size: 14px; }
 .helper-text a { color: #111827; }
+
+.oauth-row { margin-bottom: 10px; }
+.oauth-btn { display: inline-block; background: #111827; color: #fff; text-decoration: none; padding: 9px 12px; border-radius: 8px; }
+.oauth-note { color: #b42318; font-size: 14px; }

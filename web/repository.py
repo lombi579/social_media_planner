@@ -149,6 +149,18 @@ class Repository:
             )
             conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS oauth_states (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    workspace_id INTEGER NOT NULL,
+                    platform TEXT NOT NULL,
+                    state TEXT NOT NULL UNIQUE,
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS notifications (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
@@ -645,3 +657,26 @@ class Repository:
                 (workspace_id,),
             ).fetchall()
         return [dict(r) for r in rows]
+
+
+    def create_oauth_state(self, user_id: int, workspace_id: int, platform: str, state: str) -> None:
+        self._ensure_workspace_access(user_id, workspace_id)
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO oauth_states(user_id, workspace_id, platform, state, created_at) VALUES (?, ?, ?, ?, ?)",
+                (user_id, workspace_id, platform.strip().lower(), state, self._now()),
+            )
+            conn.commit()
+
+    def consume_oauth_state(self, user_id: int, workspace_id: int, platform: str, state: str) -> bool:
+        self._ensure_workspace_access(user_id, workspace_id)
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT id FROM oauth_states WHERE user_id = ? AND workspace_id = ? AND platform = ? AND state = ?",
+                (user_id, workspace_id, platform.strip().lower(), state),
+            ).fetchone()
+            if row is None:
+                return False
+            conn.execute("DELETE FROM oauth_states WHERE id = ?", (int(row["id"]),))
+            conn.commit()
+            return True

@@ -13,6 +13,9 @@ class SettingsTests(unittest.TestCase):
             "APP_RELOAD",
             "DATABASE_FILE",
             "APP_SECRET_KEY",
+            "YOUTUBE_CLIENT_ID",
+            "YOUTUBE_CLIENT_SECRET",
+            "YOUTUBE_REDIRECT_URI",
         ]
         for key in self.keys:
             os.environ.pop(key, None)
@@ -24,6 +27,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(settings.port, 8080)
         self.assertTrue(settings.reload)
         self.assertEqual(settings.secret_key, "change-me-in-production")
+        self.assertEqual(settings.youtube_client_id, "")
 
     def test_production_defaults_reload_false(self) -> None:
         os.environ["APP_ENV"] = "production"

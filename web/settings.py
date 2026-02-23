@@ -12,6 +12,9 @@ class Settings:
     reload: bool
     database_file: str
     secret_key: str
+    youtube_client_id: str
+    youtube_client_secret: str
+    youtube_redirect_uri: str
 
 
 def _to_bool(value: str | None, default: bool) -> bool:
@@ -30,4 +33,7 @@ def load_settings() -> Settings:
         reload=_to_bool(os.getenv("APP_RELOAD"), default_reload),
         database_file=os.getenv("DATABASE_FILE", "data/app.db"),
         secret_key=os.getenv("APP_SECRET_KEY", "change-me-in-production"),
+        youtube_client_id=os.getenv("YOUTUBE_CLIENT_ID", ""),
+        youtube_client_secret=os.getenv("YOUTUBE_CLIENT_SECRET", ""),
+        youtube_redirect_uri=os.getenv("YOUTUBE_REDIRECT_URI", "http://localhost:8080/oauth/youtube/callback"),
     )
