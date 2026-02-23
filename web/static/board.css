@@ -1,15 +1,38 @@
-body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #18202a; }
-header { background: #1f2937; color: #fff; padding: 16px 24px; }
-h1 { margin: 0; font-size: 24px; }
-.composer { background: #fff; margin: 16px; padding: 12px; border-radius: 8px; }
-.composer form { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-.composer input, .composer select, .composer button { padding: 8px; border: 1px solid #cdd3dc; border-radius: 6px; }
-.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px; }
-.column { background: #eef2f7; border-radius: 8px; padding: 10px; min-height: 280px; }
-.column h3 { margin: 4px 0 12px; }
-.card { background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-.meta { font-size: 12px; color: #667085; margin-bottom: 6px; }
-.actions { display: flex; justify-content: space-between; gap: 6px; margin-top: 8px; }
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --muted: #667085;
+  --line: #d0d5dd;
+  --primary: #1f2937;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, Arial, sans-serif; background: var(--bg); color: #111827; }
+.topbar { background: var(--primary); color: #fff; padding: 18px 24px; }
+.topbar h1 { margin: 0; font-size: 26px; }
+.topbar p { margin: 6px 0 0; color: #d1d5db; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px; }
+.stat-card { background: var(--surface); border-radius: 10px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.05); display: flex; justify-content: space-between; }
+.composer { background: var(--surface); margin: 16px; padding: 14px; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.filter-form { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr auto; gap: 10px; }
+.clear-btn { text-decoration: none; align-self: center; color: #111827; }
+.grid-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.grid-form input, .grid-form select, .grid-form textarea, .grid-form button,
+.filter-form input, .filter-form select, .filter-form button,
+.edit-form input, .edit-form select, .edit-form textarea, .edit-form button {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px;
+}
+.grid-form textarea { min-height: 74px; grid-column: span 2; }
+.grid-form button, .filter-form button, .edit-form button { background: #111827; color: #fff; border: 0; cursor: pointer; }
+.board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 0 16px 16px; }
+.column { background: #eceff3; border-radius: 10px; padding: 10px; min-height: 280px; }
+.column h3 { margin: 4px 0 10px; }
+.card { background: var(--surface); border-radius: 10px; padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.card .meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.card h4 { margin: 6px 0; }
+.card .date { font-size: 13px; color: #344054; }
+.edit-box { margin-top: 8px; }
+.edit-form { display: grid; gap: 8px; margin-top: 8px; }
+.edit-form textarea { min-height: 60px; }
+.actions { display: flex; gap: 6px; margin-top: 10px; justify-content: space-between; }
 .actions form { display: flex; gap: 6px; }
-button { cursor: pointer; }
-.danger { background: #ef4444; color: #fff; border: 0; }
+.danger { background: #dc2626; color: #fff; border: none; border-radius: 8px; padding: 8px; cursor: pointer; }

@@ -3,52 +3,114 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Planner Board</title>
+    <title>Social Planner</title>
     <link rel="stylesheet" href="/static/board.css" />
   </head>
   <body>
-    <header>
-      <h1>Social Media Planner — Board</h1>
+    <header class="topbar">
+      <h1>Social Planner</h1>
+      <p>Buffer-style board: YouTube / Instagram / TikTok / Telegram Channels</p>
     </header>
 
+    <section class="stats">
+      {% for column in columns %}
+      <div class="stat-card">
+        <span>{{ column|capitalize }}</span>
+        <strong>{{ stats[column] }}</strong>
+      </div>
+      {% endfor %}
+    </section>
+
+    <section class="filters composer">
+      <h2>Фильтры</h2>
+      <form method="get" action="/" class="filter-form">
+        <select name="status">
+          <option value="">Все статусы</option>
+          {% for status_name in columns %}
+          <option value="{{ status_name }}" {% if filters.status == status_name %}selected{% endif %}>{{ status_name }}</option>
+          {% endfor %}
+        </select>
+        <select name="platform">
+          <option value="">Все платформы</option>
+          {% for platform_name in platforms %}
+          <option value="{{ platform_name }}" {% if filters.platform == platform_name %}selected{% endif %}>{{ platform_name }}</option>
+          {% endfor %}
+        </select>
+        <input name="q" value="{{ filters.q }}" placeholder="Поиск по title/description/channel" />
+        <button type="submit">Применить</button>
+        <a href="/" class="clear-btn">Сброс</a>
+      </form>
+    </section>
+
     <section class="composer">
-      <h2>Создать публикацию</h2>
-      <form method="post" action="/items">
+      <h2>Новая публикация</h2>
+      <form method="post" action="/posts" class="grid-form">
+        <input name="title" placeholder="Заголовок поста" required />
         <select name="platform" required>
           <option value="youtube">YouTube</option>
           <option value="instagram">Instagram</option>
           <option value="tiktok">TikTok</option>
+          <option value="telegram">Telegram Channel</option>
         </select>
-        <input name="account" placeholder="Аккаунт" required />
+        <input name="channel_name" placeholder="Канал / аккаунт" required />
         <input name="publish_at" placeholder="YYYY-MM-DD HH:MM" required />
-        <input name="description" placeholder="Описание" required />
-        <input name="hashtags" placeholder="#tag1 #tag2" />
-        <button type="submit">Добавить</button>
+        <select name="status">
+          <option value="draft">draft</option>
+          <option value="planned" selected>planned</option>
+          <option value="published">published</option>
+          <option value="failed">failed</option>
+        </select>
+        <input name="media_url" placeholder="Ссылка на медиа (опционально)" />
+        <input name="hashtags" placeholder="#hash1 #hash2" />
+        <textarea name="description" placeholder="Описание" required></textarea>
+        <button type="submit">Сохранить публикацию</button>
       </form>
     </section>
 
     <main class="board">
-      {% set columns = {"planned": "Planned", "published": "Published", "failed": "Failed"} %}
-      {% for key, title in columns.items() %}
+      {% for column in columns %}
       <section class="column">
-        <h3>{{ title }}</h3>
-        {% for item in items if item.status == key %}
+        <h3>{{ column|capitalize }}</h3>
+        {% for post in by_status[column] %}
         <article class="card">
-          <div class="meta">#{{ item.id }} • {{ item.platform }} • {{ item.account }}</div>
-          <div><strong>{{ item.publish_at }}</strong></div>
-          <p>{{ item.description }}</p>
-          <small>{{ item.hashtags }}</small>
-          <div class="actions">
-            <form method="post" action="/items/{{ item.id }}/status">
-              <select name="status">
-                <option value="planned" {% if item.status == 'planned' %}selected{% endif %}>planned</option>
-                <option value="published" {% if item.status == 'published' %}selected{% endif %}>published</option>
-                <option value="failed" {% if item.status == 'failed' %}selected{% endif %}>failed</option>
+          <div class="meta">#{{ post.id }} • {{ post.platform }} • {{ post.channel_name }}</div>
+          <h4>{{ post.title }}</h4>
+          <div class="date">{{ post.publish_at }}</div>
+          <p>{{ post.description }}</p>
+          <small>{{ post.hashtags }}</small>
+          {% if post.media_url %}<a href="{{ post.media_url }}" target="_blank">media</a>{% endif %}
+
+          <details class="edit-box">
+            <summary>Edit post</summary>
+            <form method="post" action="/posts/{{ post.id }}/edit" class="edit-form">
+              <input name="title" value="{{ post.title }}" required />
+              <select name="platform" required>
+                <option value="youtube" {% if post.platform == 'youtube' %}selected{% endif %}>YouTube</option>
+                <option value="instagram" {% if post.platform == 'instagram' %}selected{% endif %}>Instagram</option>
+                <option value="tiktok" {% if post.platform == 'tiktok' %}selected{% endif %}>TikTok</option>
+                <option value="telegram" {% if post.platform == 'telegram' %}selected{% endif %}>Telegram</option>
               </select>
-              <button type="submit">Обновить</button>
+              <input name="channel_name" value="{{ post.channel_name }}" required />
+              <input name="publish_at" value="{{ post.publish_at }}" required />
+              <input name="hashtags" value="{{ post.hashtags }}" />
+              <input name="media_url" value="{{ post.media_url }}" />
+              <textarea name="description" required>{{ post.description }}</textarea>
+              <button type="submit">Save changes</button>
             </form>
-            <form method="post" action="/items/{{ item.id }}/delete">
-              <button type="submit" class="danger">Удалить</button>
+          </details>
+
+          <div class="actions">
+            <form method="post" action="/posts/{{ post.id }}/status">
+              <select name="status">
+                <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>draft</option>
+                <option value="planned" {% if post.status == 'planned' %}selected{% endif %}>planned</option>
+                <option value="published" {% if post.status == 'published' %}selected{% endif %}>published</option>
+                <option value="failed" {% if post.status == 'failed' %}selected{% endif %}>failed</option>
+              </select>
+              <button type="submit">Update</button>
+            </form>
+            <form method="post" action="/posts/{{ post.id }}/delete">
+              <button type="submit" class="danger">Delete</button>
             </form>
           </div>
         </article>
